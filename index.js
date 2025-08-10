@@ -1,20 +1,30 @@
 const venom = require('venom-bot');
 const axios = require('axios');
+const express = require('express');
 
+const app = express();
+const PORT = process.env.PORT || 3000;
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
+
+app.get('/', (req, res) => {
+  res.send('Venom bot running');
+});
+
+app.listen(PORT, () => {
+  console.log(`Express server listening on port ${PORT}`);
+});
 
 venom.create({
   session: 'my-session', // session name for persistence
   multidevice: false,
   headless: true,
   useChrome: true,
-  // options here if needed
+  // add more options if needed
 }).then(client => {
   console.log('Venom client started');
   
   client.onMessage(async (message) => {
     try {
-      // Prepare payload to send to n8n webhook
       const payload = {
         from: message.from,
         body: message.body,
@@ -23,7 +33,6 @@ venom.create({
         isMedia: message.isMedia,
         mimetype: message.mimetype,
         caption: message.caption,
-        // add more fields if you want
       };
       
       await axios.post(N8N_WEBHOOK_URL, payload);
